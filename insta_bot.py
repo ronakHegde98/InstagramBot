@@ -62,12 +62,12 @@ class InstaGrowth:
   def close_browser(self):
     self.browser.close()
 
-def get_credentials():
+def get_credentials(credentials_file):
   """      
     reading credentials from credentials.txt
   """
   credentials = {}
-  with open('credentials.txt') as f:
+  with open(credentials_file) as f:
     for line in f:
       line=line.strip()
       if("user".upper() in line or "user".lower() in line):
@@ -78,6 +78,7 @@ def get_credentials():
   return credentials
   
 if __name__ == "__main__":
-  credentials = get_credentials()
+  credentials_file = "credentials.txt"
+  credentials = get_credentials(credentials_file)
   bot = InstaGrowth(credentials['username'],credentials['password'])
   # bot.like_feed()
