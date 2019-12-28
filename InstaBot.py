@@ -1,6 +1,7 @@
-from timefucntions import time_difference, military_time
+from timefunctions import time_difference, military_time
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 import time
 import re
 import sys
@@ -11,9 +12,13 @@ from datetime import datetime
 
 class InstaBot:
 
+  options = Options()  
+  WINDOW_SIZE='1920,1080'
+  options.add_argument("--window-size=%s" % WINDOW_SIZE)
+
   base_url = 'https://www.instagram.com'
-  
-  def __init__(self,credentials,hashtags,schedule):
+
+  def __init__(self,config):
     """
     Initializes an instance of InstagramBot Class. 
     
@@ -26,21 +31,25 @@ class InstaBot:
     Attributes:
       browser: Selenium.webdriver.Chrome: Chromedriver that is used to automate browser
     """
-    self.browser = webdriver.Chrome('chromedriver.exe')
+    self.driver_path = config['driverpath']
+    self.browser = webdriver.Chrome(self.driver_path, chrome_options = self.options)
     valid_driver_version = self.check_driver()
 
     if(valid_driver_version):
-      self.credentials = credentials
-      self.hashtags = hashtags
-      self.schedule = schedule
+      self.credentials = config['credentials']
+      self.hashtags = config['hashtags']
+      self.schedule = config['schedule']
 
   def execute(self):
     """Full Marketing Automation Process"""
 
     self.login()
-    self.like_feed()
+    self.like_feed(3)
+    time.sleep(random.randint(10,12))
+
     for hashtag in self.hashtags:
       self.like_recent_posts(hashtag)
+
     self.close_browser()
 
   def check_driver(self):
@@ -53,6 +62,9 @@ class InstaBot:
 
     if(chrome_version==driver_version):
       return True
+    else:
+      print("Download the correct Chromedriver version")
+      sys.exit(0)
     
 
   def login(self):
@@ -78,9 +90,17 @@ class InstaBot:
       print("invalid instagram credentials!!!")
       sys.exit()
   
-  def like_feed(self):
+  def like_feed(self, max_likes):
     """Like the last n posts on feed that are unliked"""
-    pass
+    like_count = 0
+    page_height = 0
+
+    while(like_count < max_likes):
+      if(self.like_post()):
+        time.sleep(random.randint(2,4))
+        page_height+=200
+        self.scroll(page_height)
+        like_count+=1
 
   def like_recent_posts(self, hashtag):
     """
@@ -97,7 +117,7 @@ class InstaBot:
     links = self.browser.find_elements_by_tag_name('a')
     links = [link.get_attribute('href') for link in links if '.com/p' in link.get_attribute('href')]
 
-    max_likes = random.randint(4,7) 
+    max_likes = random.randint(3,4) 
     like_count = 0
 
     valid_interval = self.time_since_last_run()
@@ -170,6 +190,7 @@ class InstaBot:
     try:
       self.browser.find_element_by_xpath('//span[@class="glyphsSpriteHeart__outline__24__grey_9 u-__7"]')\
         .click()
+      return True
     except:
       pass #cannot find span element with unliked class (gray)
     time.sleep(random.randint(2,5))

@@ -14,6 +14,7 @@ def time_difference(start, end):
   start = military_time(start.upper().strip())
   end = military_time(end.upper().strip())
 
+
   start = [int(x) for x in start.split(":")]
   end = [int(x) for x in end.split(":")]
 
@@ -54,6 +55,7 @@ def military_time(time):
   time = time.replace(meridian,"").strip()
 
   hour = int(time.split(':')[0])
+  new_hour = time.split(':')[0]
 
   #recalculate hour component (account for 12 AM/12 PM)
   if(meridian=="AM"):
